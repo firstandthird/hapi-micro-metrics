@@ -1,0 +1,15 @@
+{
+  "name": "hapi-micro-metrics",
+  "description": "Hapi Plugin for Micro Metrics",
+  "homepage": "https://github.com/firstandthird/hapi-micro-metrics",
+  "author": "First+Third",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/firstandthird/hapi-micro-metrics.git"
+  },
+  "dependencies": {
+    "wreck": "^10.0.0"
+  }
+}
