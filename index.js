@@ -3,10 +3,10 @@ const wreck = require('wreck');
 const url = require('url');
 exports.register = function(server, options, next) {
 
-  server.decorate('server', 'track', (type, tags, value) => {
+  server.decorate('server', 'track', (type, tags, value, data) => {
     if (!options.endpoint) {
       if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value });
+        server.log(['micro-metrics', 'track'], { type, tags, value, data });
       }
       return;
     }
@@ -15,7 +15,8 @@ exports.register = function(server, options, next) {
       payload: JSON.stringify({
         type,
         tags,
-        value
+        value,
+        data
       })
     }, (err, resp, payload) => {
       if (err) {
@@ -28,7 +29,7 @@ exports.register = function(server, options, next) {
         return;
       }
       if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value });
+        server.log(['micro-metrics', 'track'], { type, tags, value, data });
       }
     });
   });
