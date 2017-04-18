@@ -3,33 +3,29 @@ const wreck = require('wreck');
 const url = require('url');
 exports.register = function(server, options, next) {
 
-  server.decorate('server', 'track', (type, tags, value, data) => {
-    if (!options.endpoint) {
+  console.log(options);
+  server.decorate('server', 'track', (type, value, tags, fields) => {
+    if (!options.host) {
       if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value, data });
+        server.log(['micro-metrics', 'track'], { type, tags, value, fields });
       }
       return;
     }
-    wreck.post(url.resolve(options.endpoint, '/api/track'), {
+    wreck.post(url.resolve(options.host, '/api/track'), {
       json: true,
       payload: JSON.stringify({
         type,
         tags,
         value,
-        data
+        fields
       })
     }, (err, resp, payload) => {
       if (err) {
         sever.log(['micro-metrics', 'error'], err);
         return;
       }
-
-      if (resp.statusCode !== 200) {
-        sever.log(['micro-metrics', 'error'], new Error(`Metrics API returned status code of ${resp.statusCode}`));
-        return;
-      }
       if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value, data });
+        server.log(['micro-metrics', 'track'], { type, tags, value, fields });
       }
     });
   });
