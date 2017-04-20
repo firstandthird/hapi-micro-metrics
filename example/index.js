@@ -18,7 +18,7 @@ server.register({
     verbose: true,
     logTrack: [
       { logTag: 'error', metricType: 'server.error', metricTags: {}, value: 1 },
-      { logTag: 'example', metricType: 'examples', metricTags: {}, value: 1 }
+      { logTag: 'example', metricType: 'examples' }
     ]
   }
 });

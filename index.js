@@ -29,10 +29,10 @@ exports.register = function(server, options, next) {
   });
   if (options.logTrack) {
     server.on('log', (event, tags) => {
-      options.logTrack.forEach((logTrack) => {
-        Object.keys(tags).forEach((tag) => {
+      Object.keys(tags).forEach((tag) => {
+        options.logTrack.forEach((logTrack) => {
           if (tag === logTrack.logTag) {
-            server.track(logTrack.metricType, logTrack.value, logTrack.metricTags, {});
+            server.track(logTrack.metricType, logTrack.value || 1, logTrack.metricTags || {}, {});
           }
         });
       });
