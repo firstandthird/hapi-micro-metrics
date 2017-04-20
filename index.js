@@ -11,14 +11,17 @@ exports.register = function(server, options, next) {
       }
       return;
     }
+    const payload = {
+      type,
+      tags,
+      fields
+    };
+    if (value) {
+      payload.value = value;
+    }
     wreck.post(url.resolve(options.host, '/api/track'), {
       json: true,
-      payload: JSON.stringify({
-        type,
-        tags,
-        value,
-        fields
-      })
+      payload: JSON.stringify(payload)
     }, (err, resp, payload) => {
       if (err) {
         sever.log(['micro-metrics', 'error'], err);
