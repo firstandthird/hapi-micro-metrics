@@ -2,8 +2,6 @@
 const wreck = require('wreck');
 const url = require('url');
 exports.register = function(server, options, next) {
-
-  console.log(options);
   server.decorate('server', 'track', (type, value, tags, fields) => {
     if (!options.host) {
       if (options.verbose) {
@@ -21,7 +19,7 @@ exports.register = function(server, options, next) {
       })
     }, (err, resp, payload) => {
       if (err) {
-        sever.log(['micro-metrics', 'error'], err);
+        server.log(['micro-metrics', 'error'], err);
         return;
       }
       if (options.verbose) {
@@ -29,6 +27,17 @@ exports.register = function(server, options, next) {
       }
     });
   });
+  if (options.logTrack) {
+    server.on('log', (event, tags) => {
+      options.logTrack.forEach((logTrack) => {
+        Object.keys(tags).forEach((tag) => {
+          if (tag === logTrack.logTag) {
+            server.track(logTrack.metricType, logTrack.value, logTrack.metricTags, {});
+          }
+        });
+      });
+    });
+  }
   next();
 };
 
