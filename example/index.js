@@ -17,8 +17,12 @@ server.register({
     host: process.env.METRICS_HOST,
     verbose: true,
     logTrack: [
+      // will track any log containing the 'error' tag with the specified metric tags and value:
       { logTag: 'error', metricType: 'server.error', metricTags: {}, value: 1 },
-      { logTag: 'example', metricType: 'examples' }
+      // will track any log containing the 'example' tag with default metric tags and value:
+      { logTag: 'example', metricType: 'examples' },
+      // will track any log containing the 'example' tag but not the 'current' tag:
+      { logTag: 'example', exclude: ['current'], metricType: 'should not store this', value: 'should not be stored!' }
     ]
   }
 });
@@ -38,7 +42,7 @@ server.route({
   method: 'GET',
   path: '/log-track',
   handler(request, reply) {
-    request.server.log(['example'], 'this is an example');
+    request.server.log(['example', 'current'], 'this is an example');
     reply('ok');
   }
 });
