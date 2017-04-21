@@ -6,32 +6,45 @@ const server = new Hapi.Server({
     log: ['micro-metrics']
   }
 });
-server.connection({ 
-  host: 'localhost', 
-  port: 8000 
+server.connection({
+  host: 'localhost',
+  port: 8000
 });
 
 server.register({
   register: require('../'),
   options: {
     host: process.env.METRICS_HOST,
-    verbose: true
+    verbose: true,
+    logTrack: [
+      { logTag: 'error', metricType: 'server.error', metricTags: {}, value: 1 },
+      { logTag: 'example', metricType: 'examples' }
+    ]
   }
 });
 
 // Add the route
 server.route({
   method: 'GET',
-  path:'/track', 
-  handler: function (request, reply) {
-    request.server.track('test', 1, { tag: '123'}, { name: 'bob' });
+  path: '/track',
+  handler(request, reply) {
+    request.server.track('test', 1, { tag: '123' }, { name: 'bob' });
+    reply('ok');
+  }
+});
+
+// Add a route to demonstrate log-tracking:
+server.route({
+  method: 'GET',
+  path: '/log-track',
+  handler(request, reply) {
+    request.server.log(['example'], 'this is an example');
     reply('ok');
   }
 });
 
 // Start the server
 server.start((err) => {
-
   if (err) {
     throw err;
   }
