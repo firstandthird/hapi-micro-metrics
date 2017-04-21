@@ -20,7 +20,7 @@ exports.register = function(server, options, next) {
     wreck.post(url.resolve(options.host, '/api/track'), {
       json: true,
       payload: JSON.stringify(payload)
-    }, (err, resp, payload) => {
+    }, (err, resp) => {
       if (err) {
         server.log(['micro-metrics', 'error'], err);
         return;
@@ -30,11 +30,26 @@ exports.register = function(server, options, next) {
       }
     });
   });
+
+  const excluded = (tags, excludedTags) => {
+    if (excludedTags === undefined) {
+      return false;
+    }
+    for (let i = 0; i < excludedTags.length; i++) {
+      for (let j = 0; j < tags.length; j++) {
+        if (tags[j] === excludedTags[i]) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
   if (options.logTrack) {
     server.on('log', (event, tags) => {
-      Object.keys(tags).forEach((tag) => {
+      const tagList = Object.keys(tags);
+      tagList.forEach((tag) => {
         options.logTrack.forEach((logTrack) => {
-          if (tag === logTrack.logTag) {
+          if (tag === logTrack.logTag && !excluded(tagList, logTrack.exclude)) {
             server.track(logTrack.metricType, logTrack.value || 1, logTrack.metricTags || {}, {});
           }
         });
