@@ -8,9 +8,12 @@ exports.register = function(server, options, next) {
   let timeout = null;
   let cache = [];
 
-  const send = () => {
+  const send = (done) => {
     if (cache.length === 0) {
       return;
+    }
+    if (!done) {
+      done = function() {};
     }
     const payload = {
       events: cache.slice(0)
@@ -23,11 +26,12 @@ exports.register = function(server, options, next) {
       if (err) {
         server.log(['micro-metrics', 'error'], err);
         cache = cache.concat(payload.events);
-        return;
+        return done(err);
       }
       if (options.verbose) {
         server.log(['micro-metrics', 'track', 'batch'], { count: data.length });
       }
+      done();
     });
   };
 
@@ -43,6 +47,10 @@ exports.register = function(server, options, next) {
       clearTimeout(timeout);
     }
     timeout = setTimeout(send, debounce);
+  });
+
+  server.ext('onPreStop', (s, done) => {
+    send(done);
   });
 
   const excluded = (tags, excludedTags) => {

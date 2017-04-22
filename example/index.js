@@ -56,3 +56,9 @@ server.start((err) => {
   }
   server.log(['start'], `Server running at: ${server.info.uri}`);
 });
+
+process.on('SIGTERM', () => {
+  server.stop(() => {
+    process.exit(0);
+  });
+});
