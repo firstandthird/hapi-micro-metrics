@@ -16,13 +16,15 @@ server.register({
   options: {
     host: process.env.METRICS_HOST,
     verbose: true,
+    batchEvery: 2,
     logTrack: [
       // will track any log containing the 'error' tag with the specified metric tags and value:
       { logTag: 'error', metricType: 'server.error', metricTags: {}, value: 1 },
       // will track any log containing the 'example' tag with default metric tags and value:
       { logTag: 'example', metricType: 'examples' },
       // will track any log containing the 'example' tag but not the 'current' tag:
-      { logTag: 'example', exclude: ['current'], metricType: 'should not store this', value: 'should not be stored!' }
+      { logTag: 'example', exclude: ['current'], metricType: 'should not store this', value: 'should not be stored!' },
+      { logTag: 'start', metricType: 'server.start' }
     ]
   }
 });
@@ -52,5 +54,5 @@ server.start((err) => {
   if (err) {
     throw err;
   }
-  console.log('Server running at:', server.info.uri);
+  server.log(['start'], `Server running at: ${server.info.uri}`);
 });

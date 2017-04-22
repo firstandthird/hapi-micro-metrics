@@ -2,33 +2,47 @@
 const wreck = require('wreck');
 const url = require('url');
 exports.register = function(server, options, next) {
-  server.decorate('server', 'track', (type, value, tags, fields) => {
-    if (!options.host) {
-      if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value, fields });
-      }
+  const debounce = options.debounce || 1000 * 5; //default to every 5 seconds
+  const batchEvery = options.batchEvery || 20;
+
+  let timeout = null;
+  let cache = [];
+
+  const send = () => {
+    if (cache.length === 0) {
       return;
     }
     const payload = {
-      type,
-      tags,
-      fields
+      events: cache.slice(0)
     };
-    if (value) {
-      payload.value = value;
-    }
-    wreck.post(url.resolve(options.host, '/api/track'), {
+    cache = [];
+    wreck.post(url.resolve(options.host, '/api/track/batch'), {
       json: true,
       payload: JSON.stringify(payload)
-    }, (err, resp) => {
+    }, (err, resp, data) => {
       if (err) {
         server.log(['micro-metrics', 'error'], err);
+        cache = cache.concat(payload.events);
         return;
       }
       if (options.verbose) {
-        server.log(['micro-metrics', 'track'], { type, tags, value, fields });
+        server.log(['micro-metrics', 'track', 'batch'], { count: data.length });
       }
     });
+  };
+
+  server.decorate('server', 'track', (type, value, tags, data) => {
+    if (options.verbose || !options.host) {
+      server.log(['micro-metrics', 'track'], { type, tags, value, data });
+    }
+    if (!options.host) {
+      return;
+    }
+    cache.push({ type, value, tags, data, createdOn: new Date() });
+    if (timeout && cache.length !== batchEvery) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(send, debounce);
   });
 
   const excluded = (tags, excludedTags) => {
