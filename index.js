@@ -9,11 +9,11 @@ exports.register = function(server, options, next) {
   let cache = [];
 
   const send = (done) => {
-    if (cache.length === 0) {
-      return;
-    }
     if (!done) {
       done = function() {};
+    }
+    if (cache.length === 0) {
+      return done();
     }
     const payload = {
       events: cache.slice(0)
