@@ -19,7 +19,7 @@ exports.register = function(server, options, next) {
       events: cache.slice(0)
     };
     cache = [];
-    wreck.post(url.resolve(options.host, '/api/track/batch'), {
+    wreck.post(url.resolve(options.host, 'api/track/batch'), {
       json: true,
       payload: JSON.stringify(payload)
     }, (err, resp, data) => {
