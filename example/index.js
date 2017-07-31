@@ -7,8 +7,7 @@ const server = new Hapi.Server({
   }
 });
 server.connection({
-  host: 'localhost',
-  port: 8000
+  port: 8080
 });
 
 server.register({
@@ -54,7 +53,7 @@ server.start((err) => {
   if (err) {
     throw err;
   }
-  server.log(['start'], `Server running at: ${server.info.uri}`);
+  console.log(['start'], `Server running at: ${server.info.uri}`);
 });
 
 process.on('SIGTERM', () => {

@@ -28,6 +28,12 @@ exports.register = function(server, options, next) {
         cache = cache.concat(payload.events);
         return done(err);
       }
+      if (resp.statusCode !== 200) {
+        server.log(['micro-metrics', 'send', 'req-error'], { message: 'non 200 response', payload });
+        cache = cache.concat(payload.events);
+        return done(`metrics responded with ${response.statusCode} response`);
+      }
+
       if (options.verbose) {
         server.log(['micro-metrics', 'track', 'batch'], { count: data.length });
       }
