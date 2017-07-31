@@ -24,7 +24,7 @@ exports.register = function(server, options, next) {
       payload: JSON.stringify(payload)
     }, (err, resp, data) => {
       if (err) {
-        server.log(['micro-metrics', 'error'], err);
+        server.log(['micro-metrics', 'error'], { err, data, payload });
         cache = cache.concat(payload.events);
         return done(err);
       }
