@@ -12,21 +12,21 @@ const register = function(server, options) {
     if (cache.length === 0) {
       return;
     }
-    const payload = {
+    const outgoingPayload = {
       events: cache.slice(0)
     };
     cache = [];
     try {
-      await wreck.post(url.resolve(options.host, 'api/track/batch'), {
+      const { payload } = await wreck.post(url.resolve(options.host, 'api/track/batch'), {
         json: true,
-        payload: JSON.stringify(payload)
+        payload: JSON.stringify(outgoingPayload)
       });
       if (options.verbose) {
         server.log(['micro-metrics', 'track', 'batch'], { count: payload.length });
       }
     } catch (err) {
       server.log(['micro-metrics', 'error'], err);
-      cache = cache.concat(payload.events);
+      cache = cache.concat(outgoingPayload.events);
     }
   };
 
@@ -44,9 +44,7 @@ const register = function(server, options) {
     timeout = setTimeout(send, debounce);
   });
 
-  server.ext('onPreStop', async(s) => {
-    send();
-  });
+  server.ext('onPreStop', (s) => send());
 
   const excluded = (tags, excludedTags) => {
     if (excludedTags === undefined) {
