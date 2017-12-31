@@ -11,7 +11,8 @@
   },
   "scripts": {
     "example": "node example/index.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "tap test/*.js"
   },
   "dependencies": {
     "wreck": "^14.0.2"
@@ -20,7 +21,8 @@
     "eslint": "^4.14.0",
     "eslint-config-firstandthird": "^4.3.0",
     "eslint-plugin-import": "^2.8.0",
-    "hapi": "^17.2.0"
+    "hapi": "^17.2.0",
+    "tap": "^11.0.1"
   },
   "eslintConfig": {
     "extends": "firstandthird"
