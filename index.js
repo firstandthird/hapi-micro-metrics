@@ -1,38 +1,33 @@
-'use strict';
 const wreck = require('wreck');
 const url = require('url');
-exports.register = function(server, options, next) {
+
+const register = function(server, options) {
   const debounce = options.debounce || 1000 * 5; //default to every 5 seconds
   const batchEvery = options.batchEvery || 20;
 
   let timeout = null;
   let cache = [];
 
-  const send = (done) => {
-    if (!done) {
-      done = function() {};
-    }
+  const send = async() => {
     if (cache.length === 0) {
-      return done();
+      return;
     }
-    const payload = {
+    const outgoingPayload = {
       events: cache.slice(0)
     };
     cache = [];
-    wreck.post(url.resolve(options.host, 'api/track/batch'), {
-      json: true,
-      payload: JSON.stringify(payload)
-    }, (err, resp, data) => {
-      if (err) {
-        server.log(['micro-metrics', 'error'], err);
-        cache = cache.concat(payload.events);
-        return done(err);
-      }
+    try {
+      const { payload } = await wreck.post(url.resolve(options.host, 'api/track/batch'), {
+        json: true,
+        payload: JSON.stringify(outgoingPayload)
+      });
       if (options.verbose) {
-        server.log(['micro-metrics', 'track', 'batch'], { count: data.length });
+        server.log(['micro-metrics', 'track', 'batch'], { count: payload.length });
       }
-      done();
-    });
+    } catch (err) {
+      server.log(['micro-metrics', 'error'], err);
+      cache = cache.concat(outgoingPayload.events);
+    }
   };
 
   server.decorate('server', 'track', (type, value, tags, data) => {
@@ -49,9 +44,7 @@ exports.register = function(server, options, next) {
     timeout = setTimeout(send, debounce);
   });
 
-  server.ext('onPreStop', (s, done) => {
-    send(done);
-  });
+  server.ext('onPreStop', (s) => send());
 
   const excluded = (tags, excludedTags) => {
     if (excludedTags === undefined) {
@@ -67,7 +60,7 @@ exports.register = function(server, options, next) {
     return false;
   };
   if (options.logTrack) {
-    server.on('log', (event, tags) => {
+    server.events.on('log', (event, tags) => {
       const tagList = Object.keys(tags);
       tagList.forEach((tag) => {
         options.logTrack.forEach((logTrack) => {
@@ -78,9 +71,11 @@ exports.register = function(server, options, next) {
       });
     });
   }
-  next();
 };
 
-exports.register.attributes = {
+exports.plugin = {
+  name: 'hapi-micro-metrics',
+  register,
+  once: true,
   pkg: require('./package.json')
 };
