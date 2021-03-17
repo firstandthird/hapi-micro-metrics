@@ -29,7 +29,7 @@ server.track('number-of-logins', 132, { login-method: 'HTTP' }, { loginTypes: { 
 The _server.track_ method is the main way you interface with hapi-micro-metrics.  The parameters are:
 
 ```
-_server.track(<metric-name>, <metric-value>, <tags>, <data>);
+_server.track(<metric-name>, <metric-value>, <tags>, <data>)
 ```
 
 where:
@@ -58,7 +58,7 @@ Another way to use hapi-micro-metrics is _log tracking_.  This means that you sp
 await server.register({
   plugin: require('hapi-micro-metrics'),
   options: {
-    host: 'http://localhost:8080',
+    host: 'http://my-metrics.org',
     logTrack: [{
       metricType: 'requests-per-minute',
       value: 1,
